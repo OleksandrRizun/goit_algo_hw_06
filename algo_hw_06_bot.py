@@ -19,12 +19,10 @@ class Name(Field):
 
 class Phone(Field):
     def __init__(self, value):
-        super().__init__(value)
-        pattern = r'\d{10}'
-        match = re.search(pattern, value)
-        if match.group() != value:
-            self.value = None
-
+        if len(value) == 10 and value.isdigit():
+            super().__init__(value)
+        else:
+            raise ValueError('The number format is incorrect')
 class Record:
     def __init__(self, name):
         self.name = Name(name)
@@ -33,18 +31,14 @@ class Record:
         return f"Contact name: {self.name.value}, "\
                 f"phones: {'; '.join(str(p) for p in self.phones)}"
     def add_phone(self, phone):
-        if Phone(phone).value is not None:
-            self.phones.append(Phone(phone))
+        self.phones.append(Phone(phone))
     def edit_phone(self, old_phone, new_phone):
-        if Phone(new_phone).value is not None:
-            line = [str(p) for p in self.phones]
-            index = line.index(old_phone)
-            self.phones[index] = Phone(new_phone)
-        else:
-            raise ValueError('The number format is incorrect')
+        line = [str(p) for p in self.phones]
+        index = line.index(old_phone)
+        self.phones[index] = Phone(new_phone)
     def find_phone(self, phone):
         line = [str(p) for p in self.phones]
-        return phone if phone in line else None
+        return Phone(phone) if phone in line else None
     def remove_phone(self, phone):
         line = [str(p) for p in self.phones]
         if phone in line:
@@ -55,17 +49,15 @@ class AddressBook(UserDict):
     def __str__(self):
         strg = '\n--------------- Address Book -------------------\n'
         for key, value in self.items():
-            line = ', '.join(str(phone) for phone in value)
+            line = ', '.join(str(phone) for phone in value.phones)
             strg += f'{key}: {line} \n'
         return strg
     def add_record(self, record: Record):
-        self.data[record.name.value] = record.phones
+        self.data[record.name.value] = record
     def find(self, name):
         if not name in self.keys():
             return None
-        rec = Record(name)
-        rec.phones = self.data[name]
-        return rec
+        return self.data[name]
     def delete(self, name):
         if not name in self.keys():
             return
@@ -88,6 +80,5 @@ print(f'{john.name}: {found_phone}')
 book.delete('Jane')
 
 john.remove_phone('5555555555')
-john.add_phone('9999999999999999999999')
 john.add_phone('8888888888')
 print(book)
