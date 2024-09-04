@@ -38,7 +38,7 @@ class Record:
         self.phones[index] = Phone(new_phone)
     def find_phone(self, phone):
         line = [str(p) for p in self.phones]
-        return Phone(phone) if phone in line else None
+        return self.phones[line.index(phone)] if phone in line else None
     def remove_phone(self, phone):
         line = [str(p) for p in self.phones]
         if phone in line:
